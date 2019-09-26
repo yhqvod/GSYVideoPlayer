@@ -26,18 +26,25 @@ android {
             jniLibs.srcDirs = ['libs']
         }
     }
+    lintOptions {
+        abortOnError false
+    }
+
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation androidDependencies.appcompat_v7
+
     def viewDependencies = rootProject.ext.viewDependencies
-    def dataDependencies = rootProject.ext.dataDependencies
-    compile viewDependencies.ijkplayer_java
-    compile viewDependencies.ijkplayer_exo
-    compile viewDependencies.transitionseverywhere
-    compile dataDependencies.videocache
-    //compile project(':gsyvideoplayer-androidvideocache')
-    compile androidDependencies.appcompat_v7
+    api viewDependencies.ijkplayer_java
+    api viewDependencies.ijkplayer_exo
+    api viewDependencies.transitionseverywhere
+    //api project(':gsyVideoPlayer-proxy_cache')
+    //api project(':gsyVideoPlayer-base')
+    api "com.shuyu:gsyVideoPlayer-base:$gsyVideoVersion"
+    api "com.shuyu:gsyvideoplayer-androidvideocache:$gsyVideoVersion"
+
 }
 
 apply from: './bintray.gradle'

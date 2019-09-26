@@ -6,12 +6,14 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.example.gsyvideoplayer.R;
-import com.example.gsyvideoplayer.listener.SampleListener;
 import com.example.gsyvideoplayer.model.VideoModel;
 import com.shuyu.gsyvideoplayer.GSYVideoManager;
 import com.shuyu.gsyvideoplayer.builder.GSYVideoOptionBuilder;
-import com.shuyu.gsyvideoplayer.utils.Debuger;
+import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack;
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -63,19 +65,27 @@ public class RecyclerItemNormalHolder extends RecyclerItemBaseHolder {
             url = "http://9890.vod.myqcloud.com/9890_4e292f9a3dd011e6b4078980237cc3d3.f20.mp4";
             title = "哦？Title？";
         }
+
+
+        Map<String, String> header = new HashMap<>();
+        header.put("ee", "33");
+
+        //防止错位，离开释放
+        //gsyVideoPlayer.initUIState();
         gsyVideoOptionBuilder
                 .setIsTouchWiget(false)
                 .setThumbImageView(imageView)
                 .setUrl(url)
                 .setVideoTitle(title)
-                .setCacheWithPlay(true)
+                .setCacheWithPlay(false)
                 .setRotateViewAuto(true)
                 .setLockLand(true)
                 .setPlayTag(TAG)
+                .setMapHeadData(header)
                 .setShowFullAnimation(true)
                 .setNeedLockFull(true)
                 .setPlayPosition(position)
-                .setStandardVideoAllCallBack(new SampleListener() {
+                .setVideoAllCallBack(new GSYSampleCallBack() {
                     @Override
                     public void onPrepared(String url, Object... objects) {
                         super.onPrepared(url, objects);
@@ -97,6 +107,7 @@ public class RecyclerItemNormalHolder extends RecyclerItemBaseHolder {
                     public void onEnterFullscreen(String url, Object... objects) {
                         super.onEnterFullscreen(url, objects);
                         GSYVideoManager.instance().setNeedMute(false);
+                        gsyVideoPlayer.getCurrentPlayer().getTitleTextView().setText((String)objects[0]);
                     }
                 }).build(gsyVideoPlayer);
 

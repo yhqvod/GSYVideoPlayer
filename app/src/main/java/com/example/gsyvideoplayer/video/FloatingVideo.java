@@ -1,15 +1,19 @@
 package com.example.gsyvideoplayer.video;
 
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.media.AudioManager;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 
 import com.example.gsyvideoplayer.R;
-import com.shuyu.gsyvideoplayer.GSYVideoManager;
 import com.shuyu.gsyvideoplayer.utils.Debuger;
+import com.shuyu.gsyvideoplayer.utils.NetworkUtils;
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer;
 
 import java.util.Timer;
@@ -76,16 +80,16 @@ public class FloatingVideo extends StandardGSYVideoPlayer {
 
     @Override
     protected void startPrepare() {
-        if (GSYVideoManager.instance().listener() != null) {
-            GSYVideoManager.instance().listener().onCompletion();
+        if (getGSYVideoManager().listener() != null) {
+            getGSYVideoManager().listener().onCompletion();
         }
-        GSYVideoManager.instance().setListener(this);
-        GSYVideoManager.instance().setPlayTag(mPlayTag);
-        GSYVideoManager.instance().setPlayPosition(mPlayPosition);
+        getGSYVideoManager().setListener(this);
+        getGSYVideoManager().setPlayTag(mPlayTag);
+        getGSYVideoManager().setPlayPosition(mPlayPosition);
         mAudioManager.requestAudioFocus(onAudioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
         //((Activity) getActivityContext()).getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mBackUpPlayingBufferState = -1;
-        GSYVideoManager.instance().prepare(mUrl, mMapHeadData, mLooping, mSpeed);
+        getGSYVideoManager().prepare(mUrl, mMapHeadData, mLooping, mSpeed, mCache, mCachePath, null);
         setStateAndUi(CURRENT_STATE_PREPAREING);
     }
 
@@ -100,7 +104,7 @@ public class FloatingVideo extends StandardGSYVideoPlayer {
         }
 
         if (!mIfCurrentIsFullscreen)
-            GSYVideoManager.instance().setLastListener(null);
+            getGSYVideoManager().setLastListener(null);
         mAudioManager.abandonAudioFocus(onAudioFocusChangeListener);
         //((Activity) getActivityContext()).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -124,11 +128,11 @@ public class FloatingVideo extends StandardGSYVideoPlayer {
         }
 
         if (!mIfCurrentIsFullscreen) {
-            GSYVideoManager.instance().setListener(null);
-            GSYVideoManager.instance().setLastListener(null);
+            getGSYVideoManager().setListener(null);
+            getGSYVideoManager().setLastListener(null);
         }
-        GSYVideoManager.instance().setCurrentVideoHeight(0);
-        GSYVideoManager.instance().setCurrentVideoWidth(0);
+        getGSYVideoManager().setCurrentVideoHeight(0);
+        getGSYVideoManager().setCurrentVideoWidth(0);
 
         mAudioManager.abandonAudioFocus(onAudioFocusChangeListener);
         //((Activity) getActivityContext()).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -162,6 +166,43 @@ public class FloatingVideo extends StandardGSYVideoPlayer {
             mDismissControlViewTimerTask = null;
         }
 
+    }
+
+
+    @Override
+    protected boolean isShowNetConfirm() {
+        return false;
+    }
+
+    @Override
+    protected void showWifiDialog() {
+        if (!NetworkUtils.isAvailable(mContext)) {
+            //Toast.makeText(mContext, getResources().getString(R.string.no_net), Toast.LENGTH_LONG).show();
+            startPlayLogic();
+            return;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivityContext());
+        builder.setMessage(getResources().getString(com.shuyu.gsyvideoplayer.R.string.tips_not_wifi));
+        builder.setPositiveButton(getResources().getString(com.shuyu.gsyvideoplayer.R.string.tips_not_wifi_confirm), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                startPlayLogic();
+            }
+        });
+        builder.setNegativeButton(getResources().getString(com.shuyu.gsyvideoplayer.R.string.tips_not_wifi_cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        AlertDialog alertDialog =  builder.create();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);
+        } else {
+            alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+        }
+        alertDialog.show();
     }
 
     private class DismissControlViewTimerTask extends TimerTask {

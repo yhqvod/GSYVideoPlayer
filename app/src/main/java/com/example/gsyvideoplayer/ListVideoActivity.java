@@ -3,17 +3,16 @@ package com.example.gsyvideoplayer;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.transition.Explode;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 
 import com.example.gsyvideoplayer.adapter.ListNormalAdapter;
 import com.shuyu.gsyvideoplayer.GSYVideoManager;
-import com.shuyu.gsyvideoplayer.video.base.GSYVideoPlayer;
-import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -34,6 +33,7 @@ public class ListVideoActivity extends AppCompatActivity {
         // 设置一个exit transition
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
             getWindow().setEnterTransition(new Explode());
             getWindow().setExitTransition(new Explode());
         }
@@ -59,8 +59,11 @@ public class ListVideoActivity extends AppCompatActivity {
                     //对应的播放列表TAG
                     if (GSYVideoManager.instance().getPlayTag().equals(ListNormalAdapter.TAG)
                             && (position < firstVisibleItem || position > lastVisibleItem)) {
+                        if(GSYVideoManager.isFullState(ListVideoActivity.this)) {
+                            return;
+                        }
                         //如果滑出去了上面和下面就是否，和今日头条一样
-                        GSYVideoPlayer.releaseAllVideos();
+                        GSYVideoManager.releaseAllVideos();
                         listNormalAdapter.notifyDataSetChanged();
                     }
                 }
@@ -74,7 +77,7 @@ public class ListVideoActivity extends AppCompatActivity {
         //为了支持重力旋转
         onBackPressAdapter();
 
-        if (StandardGSYVideoPlayer.backFromWindowFull(this)) {
+        if (GSYVideoManager.backFromWindowFull(this)) {
             return;
         }
         super.onBackPressed();
@@ -97,7 +100,7 @@ public class ListVideoActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        GSYVideoPlayer.releaseAllVideos();
+        GSYVideoManager.releaseAllVideos();
         if (listNormalAdapter != null) {
             listNormalAdapter.onDestroy();
         }

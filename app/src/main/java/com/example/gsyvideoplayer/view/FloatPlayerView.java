@@ -1,14 +1,13 @@
 package com.example.gsyvideoplayer.view;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.example.gsyvideoplayer.video.FloatingVideo;
-import com.shuyu.gsyvideoplayer.video.base.GSYVideoPlayer;
+import com.shuyu.gsyvideoplayer.GSYVideoManager;
 
 /**
  * 适配了悬浮窗的view
@@ -60,16 +59,11 @@ public class FloatPlayerView extends FrameLayout {
 
 
     public void onPause() {
-        videoPlayer.onVideoPause();
+        videoPlayer.getCurrentPlayer().onVideoPause();
     }
 
     public void onResume() {
-        videoPlayer.onVideoResume();
+        videoPlayer.getCurrentPlayer().onVideoResume();
     }
 
-    public void onBackPressed() {
-        //释放所有
-        videoPlayer.setStandardVideoAllCallBack(null);
-        GSYVideoPlayer.releaseAllVideos();
-    }
 }

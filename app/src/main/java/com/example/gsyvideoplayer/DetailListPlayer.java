@@ -1,14 +1,13 @@
 package com.example.gsyvideoplayer;
 
 import android.os.Bundle;
-import android.support.v4.widget.NestedScrollView;
+import androidx.core.widget.NestedScrollView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.shuyu.gsyvideoplayer.GSYBaseActivityDetail;
 import com.shuyu.gsyvideoplayer.builder.GSYVideoOptionBuilder;
-import com.shuyu.gsyvideoplayer.video.base.GSYBaseVideoPlayer;
 import com.shuyu.gsyvideoplayer.video.base.GSYVideoPlayer;
 import com.shuyu.gsyvideoplayer.listener.LockClickListener;
 import com.shuyu.gsyvideoplayer.model.GSYVideoModel;
@@ -26,7 +25,7 @@ import butterknife.ButterKnife;
  * Created by shuyu on 2016/12/20.
  */
 
-public class DetailListPlayer extends GSYBaseActivityDetail {
+public class DetailListPlayer extends GSYBaseActivityDetail<ListGSYVideoPlayer> {
 
 
     @BindView(R.id.post_detail_nested_scroll)
@@ -35,7 +34,8 @@ public class DetailListPlayer extends GSYBaseActivityDetail {
     ListGSYVideoPlayer detailPlayer;
     @BindView(R.id.activity_detail_player)
     RelativeLayout activityDetailPlayer;
-
+    @BindView(R.id.next)
+    View next;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +48,7 @@ public class DetailListPlayer extends GSYBaseActivityDetail {
 
         //String url = "http://baobab.wd jcdn.com/14564977406580.mp4";
         List<GSYVideoModel> urls = new ArrayList<>();
-        urls.add(new GSYVideoModel("http://7xse1z.com1.z0.glb.clouddn.com/1491813192", "标题1"));
+        urls.add(new GSYVideoModel("http://7xjmzj.com1.z0.glb.clouddn.com/20171026175005_JObCxCE2.mp4", "标题1"));
         urls.add(new GSYVideoModel("http://9890.vod.myqcloud.com/9890_4e292f9a3dd011e6b4078980237cc3d3.f20.mp4", "标题2"));
         urls.add(new GSYVideoModel("https://res.exexm.com/cw_145225549855002", "标题3"));
         urls.add(new GSYVideoModel("http://9890.vod.myqcloud.com/9890_4e292f9a3dd011e6b4078980237cc3d3.f20.mp4", "标题4"));
@@ -67,9 +67,10 @@ public class DetailListPlayer extends GSYBaseActivityDetail {
         detailPlayer.setRotateViewAuto(false);
         detailPlayer.setLockLand(false);
         detailPlayer.setShowFullAnimation(false);
-        detailPlayer.setNeedLockFull(true);
+        //detailPlayer.setNeedLockFull(true);
+        detailPlayer.setAutoFullWithSize(true);
 
-        detailPlayer.setStandardVideoAllCallBack(this);
+        detailPlayer.setVideoAllCallBack(this);
 
         detailPlayer.setLockClickListener(new LockClickListener() {
             @Override
@@ -81,10 +82,17 @@ public class DetailListPlayer extends GSYBaseActivityDetail {
             }
         });
 
+        next.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((ListGSYVideoPlayer) detailPlayer.getCurrentPlayer()).playNext();
+            }
+        });
+
     }
 
     @Override
-    public GSYBaseVideoPlayer getGSYVideoPlayer() {
+    public ListGSYVideoPlayer getGSYVideoPlayer() {
         return detailPlayer;
     }
 
@@ -101,6 +109,7 @@ public class DetailListPlayer extends GSYBaseActivityDetail {
 
     /**
      * 是否启动旋转横屏，true表示启动
+     *
      * @return true
      */
     @Override
@@ -112,10 +121,9 @@ public class DetailListPlayer extends GSYBaseActivityDetail {
     public void onEnterFullscreen(String url, Object... objects) {
         super.onEnterFullscreen(url, objects);
         //隐藏调全屏对象的返回按键
-        GSYVideoPlayer gsyVideoPlayer = (GSYVideoPlayer)objects[1];
+        GSYVideoPlayer gsyVideoPlayer = (GSYVideoPlayer) objects[1];
         gsyVideoPlayer.getBackButton().setVisibility(View.GONE);
     }
-
 
 
     private void resolveNormalVideoUI() {
@@ -126,7 +134,7 @@ public class DetailListPlayer extends GSYBaseActivityDetail {
 
     private GSYVideoPlayer getCurPlay() {
         if (detailPlayer.getFullWindowPlayer() != null) {
-            return  detailPlayer.getFullWindowPlayer();
+            return detailPlayer.getFullWindowPlayer();
         }
         return detailPlayer;
     }
